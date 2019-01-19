@@ -1,7 +1,9 @@
 
+% requires fieldtrip toolbox
 % change folder to match local
 folder = '/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/Dull, Clarity, Open Presence/';
 subj   = 'MED_007';
+cd([folder subj])
 files = dir('*.cnt');
 
 close all
@@ -14,7 +16,8 @@ for i=1:length(files)
     cfg.bsfreq   = [49.5 50.5; 99.5 100.5];
     cfg.bpfreq   = [4 120];
     ftdata = ft_preprocessing(cfg);
-
+    
+    if i==3,keyboard,end
     cfg = [];
     cfg.length = 2;
     ftdata_epoch = ft_redefinetrial(cfg,ftdata);
