@@ -1,13 +1,14 @@
-
+clear;clc
 % requires fieldtrip toolbox
 % change folder to match local
 % folder = '/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/Dull, Clarity, Open Presence/';
 folder = '/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/20 Minute Open Presence Runs/';
 
-subj   = 'MED_011';
+subj   = 'MED_015';
 cd([folder subj])
 files = dir('*.cnt');
 
+%%
 close all
 for i=1:length(files)
 
@@ -18,31 +19,34 @@ for i=1:length(files)
     cfg.bsfreq   = [49.5 50.5; 99.5 100.5];
     cfg.bpfreq   = [4 120];
     ftdata = ft_preprocessing(cfg);
-     
+    
+    
+%     starttime = 1.5; % in seconds
+%     [~,pos] = min(abs(ftdata.time{1}-starttime));
+%     ftdata.time{1} = ftdata.time{1}(pos:end);
+%     ftdata.trial{1} = ftdata.trial{1}(:,pos:end);
+    
     cfg = [];
     cfg.length = 2;
     ftdata_epoch = ft_redefinetrial(cfg,ftdata);
     
 %     % muscle artefacts
-    cfg = [];
-    cfg.preproc.bpfilter    = 'yes';
-    cfg.preproc.bpfreq      = [110 140];
-    cfg.preproc.bpfiltord   =  8;
-    cfg.preproc.bpfilttype  = 'but';
-    cfg.preproc.rectify     = 'yes';
-    cfg.preproc.boxcar      = 0.2;
-    cfg.method = 'channel';
-    ftdata = ft_rejectvisual(cfg, ftdata);
+%     cfg = [];
+%     cfg.preproc.bpfilter    = 'yes';
+%     cfg.preproc.bpfreq      = [110 140];
+%     cfg.preproc.bpfiltord   =  8;
+%     cfg.preproc.bpfilttype  = 'but';
+%     cfg.preproc.rectify     = 'yes';
+%     cfg.preproc.boxcar      = 0.2;
+%     cfg.method = 'channel';
+%     ftdata = ft_rejectvisual(cfg, ftdata);
     
 %    cfg = [];
 %    cfg.interactive = 'yes';
-%    cfg.trl = ftdata.cfg.trl;
+%    cfg.trl = ftdata_epoch.cfg.trl;
 %    
-%    cfg.artfctdef.zvalue.channel = 'all'
+%    cfg.artfctdef.zvalue.channel = 'eeg';
 %    cfg.artfctdef.zvalue.cutoff  = 3;
-%    cfg.artfctdef.zvalue.trlpadding
-%    cfg.artfctdef.zvalue.fltpadding
-%    cfg.artfctdef.zvalue.artpadding
 %    [cfg, artifact] = ft_artifact_zvalue(cfg, ftdata);
    
     cfg = [];
@@ -64,13 +68,14 @@ for i=1:length(files)
     [~,fname]=fileparts(files(i).name);
     fname = strsplit(fname,'_');
     for band = 1:5
-        subplot(length(files),5,band+5*(i-1))
+        subplot(length(files),size(banddef,1),band+size(banddef,1)*(i-1))
+        
         title(sprintf('%s: Sensor Dist\n %s power',fname{end},bandname{band}))
         cfg        = [];
         cfg.layout = 'biosemi32.lay';
         cfg.xlim   = banddef(band,:);
         cfg.parameter = 'powspctrm';
-        % cfg.interactive = 'yes'; %% select this and you can choose the channels!
+        % cfg.interactive = 'yes'; %% to choose channels
         ft_topoplotER(cfg, freqdata(i));
     end
 end

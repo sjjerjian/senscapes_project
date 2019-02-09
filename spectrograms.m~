@@ -33,8 +33,30 @@ for i=1%:length(files)
     cfg.tapsmofrq = 3;
     cfg.foi   = [4:120];
     cfg.pad='nextpow2';
+    cfg.keeptrials = 'yes';
     [freq] = ft_freqanalysis(cfg, ftdata_epoch);
-  
+    
+    bsln = mean(freq.powspctrm,1);
+    freq.powspctrm = freq.powspctrm ./ bsln;
+    
+    begs = ftdata_epoch.sampleinfo(:,1);
+    ends = ftdata_epoch.sampleinfo(:,2);
+    time = ((begs+ends)/2) / ftdata_epoch.fsample;
+    
+    freqc = freq;
+    freqc.powspctrm = permute(freq.powspctrm, [2 3 1]);
+    freqc.dimord    = 'chan_freq_time';
+    freqc.time      = time;
+    
+%     cfg = [];
+%     cfg.layout = 'easycapM23.mat';
+%     ft_multiplotTFR(cfg,freqc);
+    
+    cfg = [];
+    cfg.parameter = 'powspctrm';
+    cfg.channel = 'C3';
+    ft_singleplotTFR(cfg, freq)
+
     cfg              = [];
     cfg.output       = 'pow';
     cfg.channel      = 'eeg';
@@ -47,19 +69,11 @@ for i=1%:length(files)
     cfg.keeptrials   = 'yes';
     TFRhann          = ft_freqanalysis(cfg, ftdata_epoch);
     
-    begs = ftdata_epoch.sampleinfo(:,1);
-    ends = ftdata_epoch.sampleinfo(:,2);
-    time = bsxfun(@plus,TFRhann.time,begs/ftdata_epoch.fsample)';
-    
     TFRt = TFRhann;
-    TFRt.powspctrm = permute(TFRt.powspctrm, [2 3 4 1]);
-    TFRt.powspctrm = reshape(TFRt.powspctrm,size(TFRt.powspctrm,1),size(TFRt.powspctrm,2),size(TFRt.powspctrm,3)*size(TFRt.powspctrm,4));
-    TFRt.dimord    = 'chan_freq_time';
-    TFRt.time      = reshape(time,size(time,1)*size(time,2),[]);
-    
-    cfg = [];
-    cfg.channel = 'C3';
-    ft_singleplotTFR(cfg, TFRhann)
+    TFRt.powspctrm = permute(TFRt.powspctrm, [2 3 1 4]);
+    TFRt.pows
+    freqc.dimord    = 'chan_freq_time';
+    freqc.time      = time;
     
     for l=1:length(TFRhann.label)
         cfg = [];
