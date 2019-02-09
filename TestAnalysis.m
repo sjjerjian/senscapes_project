@@ -1,8 +1,10 @@
 
 % requires fieldtrip toolbox
 % change folder to match local
-folder = '/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/Dull, Clarity, Open Presence/';
-subj   = 'MED_007';
+% folder = '/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/Dull, Clarity, Open Presence/';
+folder = '/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/20 Minute Open Presence Runs/';
+
+subj   = 'MED_011';
 cd([folder subj])
 files = dir('*.cnt');
 
@@ -16,12 +18,33 @@ for i=1:length(files)
     cfg.bsfreq   = [49.5 50.5; 99.5 100.5];
     cfg.bpfreq   = [4 120];
     ftdata = ft_preprocessing(cfg);
-    
-    if i==3,keyboard,end
+     
     cfg = [];
     cfg.length = 2;
     ftdata_epoch = ft_redefinetrial(cfg,ftdata);
     
+%     % muscle artefacts
+    cfg = [];
+    cfg.preproc.bpfilter    = 'yes';
+    cfg.preproc.bpfreq      = [110 140];
+    cfg.preproc.bpfiltord   =  8;
+    cfg.preproc.bpfilttype  = 'but';
+    cfg.preproc.rectify     = 'yes';
+    cfg.preproc.boxcar      = 0.2;
+    cfg.method = 'channel';
+    ftdata = ft_rejectvisual(cfg, ftdata);
+    
+%    cfg = [];
+%    cfg.interactive = 'yes';
+%    cfg.trl = ftdata.cfg.trl;
+%    
+%    cfg.artfctdef.zvalue.channel = 'all'
+%    cfg.artfctdef.zvalue.cutoff  = 3;
+%    cfg.artfctdef.zvalue.trlpadding
+%    cfg.artfctdef.zvalue.fltpadding
+%    cfg.artfctdef.zvalue.artpadding
+%    [cfg, artifact] = ft_artifact_zvalue(cfg, ftdata);
+   
     cfg = [];
     cfg.channel = 'eeg';
     cfg.method    = 'mtmfft';
@@ -55,6 +78,11 @@ end
 %%
 cfg.dataset='/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/Dull, Clarity, Open Presence/MED_007/Run_005_Dull.cnt';
 
+folder = '/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/Dull, Clarity, Open Presence/';
+subj   = 'MED_016';
+cd([folder subj])
+
+cfg.dataset = [folder '/' subj '/Run006_Clarity.cnt'];
 cfg.bpfilter = 'yes';
 cfg.bpfreq = [60 120];
 ftdata=ft_preprocessing(cfg);
