@@ -1,10 +1,10 @@
 % Spectrograms
 
 clear;clc
-% folder = '/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/Dull, Clarity, Open Presence/';
-folder = '/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/20 Minute Open Presence Runs/';
+folder = '/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/Dull, Clarity, Open Presence/';
+% folder = '/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/Public Dissemination/20 Minute Open Presence Runs/';
 
-subj   = 'MED_003';
+subj   = 'MED_007';
 cd([folder subj])
 files = dir('*.cnt');
 
@@ -24,6 +24,16 @@ for i=1%:length(files)
     cfg.length = 2;
     cfg.overlap = 0;
     ftdata_epoch = ft_redefinetrial(cfg,ftdata);
+    
+    % artefact rejection
+    ftdata_epoch = ft_rejectvisual(cfg, ftdata_epoch);
+    
+%     cfg=[];
+%     cfg.artfctdef.zvalue.channel = 'eeg';
+%     cfg.artfctdef.zvalue.cutoff  = 3;
+%     cfg.artfctdef.reject = 'complete';
+%     ftdata_epoch = ft_rejectartifact(cfg,ftdata_epoch);
+%     cfg = ft_databrowser(cfg, ftdata);
 
     % power spectra
     cfg = [];
@@ -34,6 +44,7 @@ for i=1%:length(files)
     cfg.foi   = [4:120];
     cfg.pad='nextpow2';
     [freq] = ft_freqanalysis(cfg, ftdata_epoch);
+    
   
     cfg              = [];
     cfg.output       = 'pow';
