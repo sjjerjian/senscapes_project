@@ -11,7 +11,10 @@ files = dir('*.cnt');
 %%
 close all
 for i=1%:length(files)
-
+    clf
+    [~,fname]=fileparts(files(i).name);
+    fname = strsplit(fname,'_');
+    
     cfg=[];
     cfg.dataset = [files(i).folder '/' files(i).name];
     cfg.bpfilter = 'yes';
@@ -21,14 +24,12 @@ for i=1%:length(files)
     ftdata = ft_preprocessing(cfg);
        
     cfg = [];
-    cfg.length = 2;
-    cfg.overlap = 0;
+    cfg.length = 180;
     ftdata_epoch = ft_redefinetrial(cfg,ftdata);
     
     % artefact rejection
-    ftdata_epoch = ft_rejectvisual(cfg, ftdata_epoch);
-    
-%     cfg=[];
+%     cfg = [];
+%     ftdata_epoch = ft_rejectvisual(cfg, ftdata_epoch);
 %     cfg.artfctdef.zvalue.channel = 'eeg';
 %     cfg.artfctdef.zvalue.cutoff  = 3;
 %     cfg.artfctdef.reject = 'complete';
@@ -36,52 +37,57 @@ for i=1%:length(files)
 %     cfg = ft_databrowser(cfg, ftdata);
 
     % power spectra
-    cfg = [];
-    cfg.channel = 'eeg';
-    cfg.method = 'mtmfft';
-    cfg.output = 'pow';
-    cfg.tapsmofrq = 3;
-    cfg.foi   = [4:120];
-    cfg.pad='nextpow2';
-    [freq] = ft_freqanalysis(cfg, ftdata_epoch);
+%     cfg = [];
+%     cfg.channel = 'eeg';
+%     cfg.method = 'mtmfft';
+%     cfg.output = 'pow';
+%     cfg.tapsmofrq = 3;
+%     cfg.foi   = [4:120];
+%     cfg.pad='nextpow2';
+%     [freq] = ft_freqanalysis(cfg, ftdata_epoch);
     
-  
     cfg              = [];
     cfg.output       = 'pow';
     cfg.channel      = 'eeg';
     cfg.method       = 'mtmconvol';
     cfg.taper        = 'hanning';
-    cfg.foi          = 4:2:120;                         
-    cfg.t_ftimwin    = ones(length(cfg.foi),1).*0.5;  
-    cfg.toi          = 0:0.05:2;      % 50ms stepsize              
+    cfg.foi          = 4:120;                         
+    cfg.t_ftimwin    = ones(length(cfg.foi),1).*0.5;  % window size
+    cfg.toi          = -0.5:0.05:180.5;      % stepsize              
     cfg.pad          = 'nextpow2';
-    cfg.keeptrials   = 'yes';
+%     cfg.keeptrials   = 'no';
     TFRhann          = ft_freqanalysis(cfg, ftdata_epoch);
     
-    begs = ftdata_epoch.sampleinfo(:,1);
-    ends = ftdata_epoch.sampleinfo(:,2);
-    time = bsxfun(@plus,TFRhann.time,begs/ftdata_epoch.fsample)';
-    
-    TFRt = TFRhann;
-    TFRt.powspctrm = permute(TFRt.powspctrm, [2 3 4 1]);
-    TFRt.powspctrm = reshape(TFRt.powspctrm,size(TFRt.powspctrm,1),size(TFRt.powspctrm,2),size(TFRt.powspctrm,3)*size(TFRt.powspctrm,4));
-    TFRt.dimord    = 'chan_freq_time';
-    TFRt.time      = reshape(time,size(time,1)*size(time,2),[]);
+%     if strcmp(cfg.keeptrials,'yes')
+%         ps = permute(TFRhann.powspctrm(:,:,:,pos(1):pos(2)),[2 3 4 1]);
+%         [~,pos(1)]=min(abs(TFRhann.time-0));
+%         [~,pos(2)]=min(abs(TFRhann.time-180));
+%         ps = reshape(ps,size(ps,1),size(ps,2),size(ps,3)*size(ps,4));
+%         TFRhann.powspctrm = ps;
+%         TFRhann.dimord = 'chan_freq_time';
+%         begs = ftdata_epoch.sampleinfo(:,1);
+%         ends = ftdata_epoch.sampleinfo(:,2);
+%         
+%         time = bsxfun(@plus,TFRhann.time(pos(1):pos(2)),begs/ftdata_epoch.fsample)';
+%         time = reshape(time,size(time,1)*size(time,2),[]);
+%         TFRhann.time = time;
+%     end
     
     cfg = [];
-    cfg.channel = 'C3';
-    ft_singleplotTFR(cfg, TFRhann)
+    cfg.baseline = [0 180];
+    cfg.baselinetype = 'relative';
+    [TFRhann] = ft_freqbaseline(cfg, TFRhann);
+
+    cd('/Users/stevenjerjian/Desktop/Senscapes/Meditation Project/senscapes_project/figs')
+    cfg = [];
+    cfg.colorbar = 'no';
+    cfg.zlim     = [0 5];
     
-    for l=1:length(TFRhann.label)
-        cfg = [];
-        cfg.baseline     = [0 10];
-        cfg.baselinetype = 'relative';
-        cfg.maskstyle    = 'saturation';
-        %     cfg.masknans     = 'yes';
-        cfg.zlim         = [0 3];
-        cfg.channel      = TFRhann.label{l};
-        figure
-        ft_singleplotTFR(cfg, TFRhann);
-        
-    end
+%     for l=1:length(TFRhann.label)
+%         cfg.channel = TFRhann.label{l};
+%         ft_singleplotTFR(cfg, TFRhann);      
+%     end
+    cfg.layout  = 'biosemi32.lay';
+    ft_multiplotTFR(cfg, TFRhann);     
+    
 end
