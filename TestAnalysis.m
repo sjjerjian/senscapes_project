@@ -20,12 +20,6 @@ for i=1:2%length(files)
     cfg.bpfreq   = [4 120];
     ftdata = ft_preprocessing(cfg);
     
-    
-%     starttime = 1.5; % in seconds
-%     [~,pos] = min(abs(ftdata.time{1}-starttime));
-%     ftdata.time{1} = ftdata.time{1}(pos:end);
-%     ftdata.trial{1} = ftdata.trial{1}(:,pos:end);
-    
     cfg = [];
     cfg.length = 2;
     ftdata_epoch = ft_redefinetrial(cfg,ftdata);
